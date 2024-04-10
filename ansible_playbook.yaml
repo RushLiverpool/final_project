@@ -1,0 +1,15 @@
+- name: Deploy Docker image to GKE
+  hosts: localhost
+  vars:
+    CLUSTER_NAME: "final-project-cluster-1"
+    LOCATION: "us-central1-c"
+    PROJECT_ID: "nomadic-buffer-411116"
+
+  tasks:
+    - name: Authenticate with GKE
+      shell: gcloud auth activate-service-account --key-file=/home/ec2-user/nomadic-buffer-411116-b598631ca1f0.json
+    - name: Configure kubectl
+      shell: gcloud container clusters get-credentials {{ CLUSTER_NAME }} --zone {{ LOCATION }} --project {{ PROJECT_ID }}
+
+    - name: Apply Kubernetes manifest
+      shell: kubectl apply -f /home/ec2-user/manifest.yaml
