@@ -12,4 +12,4 @@
       shell: gcloud container clusters get-credentials {{ CLUSTER_NAME }} --zone {{ LOCATION }} --project {{ PROJECT_ID }}
 
     - name: Apply Kubernetes manifest
-      shell: kubectl apply -f /home/ec2-user/manifest.yaml
+      shell: kubectl apply -f /tmp/jenkinsdir/workspace/Test_pipeline/manifest.yaml
