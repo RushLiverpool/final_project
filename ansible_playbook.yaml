@@ -3,11 +3,11 @@
   vars:
     CLUSTER_NAME: "final-project-cluster-1"
     LOCATION: "us-central1-c"
-    PROJECT_ID: "nomadic-buffer-411116"
+    PROJECT_ID: "second-broker-421607"
 
   tasks:
     - name: Authenticate with GKE
-      shell: gcloud auth activate-service-account --key-file=/tmp/jenkinsdir/workspace/Test_pipeline/nomadic-buffer-411116-b598631ca1f0.json
+      shell: gcloud auth activate-service-account --key-file=/tmp/jenkinsdir/workspace/Test_pipeline/second-broker-421607-3dc73cc5a88a.json
     - name: Configure kubectl
       shell: gcloud container clusters get-credentials {{ CLUSTER_NAME }} --zone {{ LOCATION }} --project {{ PROJECT_ID }}
 
