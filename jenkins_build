@@ -1,0 +1,82 @@
+pipeline {
+    agent none
+    
+    environment {
+        PROJECT_ID = 'second-broker-421607'
+        CLUSTER_NAME = 'final-project-cluster-1'
+        LOCATION = 'us-central1-c'
+        CREDENTIALS_ID = 'GKE_Creds'
+    }
+    
+    stages {
+        stage('checkout') {
+            agent {
+                label 'Linux_slave'
+            }
+            steps {
+                git 'https://github.com/RushLiverpool/final_project.git'
+            }
+        }
+
+        stage('compile') {
+            agent {
+                label 'Linux_slave'
+            }
+            steps {
+                sh 'mvn compile'
+            }
+        }
+
+        stage('Test') {
+            agent {
+                label 'Linux_slave'
+            }
+            steps {
+                sh 'mvn test'
+            }
+        }
+
+        stage('Build package') {
+            agent {
+                label 'Linux_slave'
+            }
+            steps {
+                sh 'mvn package'
+            }
+        }
+        
+        stage('Build image') {
+            agent {
+                label 'Linux_slave'
+            }
+            steps {
+                sh 'cp /tmp/jenkinsdir/workspace/Test_pipeline/target/ABCtechnologies-1.0.war /tmp/jenkinsdir/workspace/Test_pipeline/'
+                sh 'docker build -t abc_techimage:$BUILD_NUMBER .'
+                sh 'docker tag abc_techimage:$BUILD_NUMBER rushlfc/abc_techimage:$BUILD_NUMBER'
+            }
+        }
+
+        stage('Push Docker image') {
+            agent {
+                label 'Linux_slave'
+            }
+            steps {
+                withDockerRegistry([credentialsId: "dockerhub_creds", url: ""]) {
+                    sh 'docker push rushlfc/abc_techimage:$BUILD_NUMBER'
+                }
+            }
+        }
+        
+        stage('Deploy to GKE') {
+            agent {
+                label 'Linux_slave'
+            }
+            steps {
+                // Execute Ansible playbook to deploy Docker image to GKE
+                    sh "sed -i 's/abc_techimage:latest/abc_techimage:$BUILD_NUMBER/g' manifest.yaml"
+                    ansiblePlaybook(playbook: 'ansible_playbook.yaml', extras: "-e PROJECT_ID=${env.PROJECT_ID} -e CLUSTER_NAME=${env.CLUSTER_NAME} -e LOCATION=${env.LOCATION} -e CREDENTIALS_ID=${env.CREDENTIALS_ID}")
+                
+            }
+        }
+    }
+}
